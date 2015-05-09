@@ -1,0 +1,137 @@
+package com.cit.robot;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+public class Selfslider {
+	
+	//定义滑动条的个数
+	protected int slidernum = 17;
+	
+	protected String mesg="null";
+	
+	Box sliderBox = new Box(BoxLayout.Y_AXIS);  
+    JTextField showVal = new JTextField();  
+    ChangeListener listener;
+    
+
+	public Box addSliders()  
+    {
+		//Box box = new Box(BoxLayout.X_AXIS);
+		Box box = new Box(17);
+    	JSlider slider1=new JSlider(-50,50);
+    	JSlider slider2=new JSlider(-50,50);
+    	JSlider slider3=new JSlider(-50,50);
+    	JSlider slider4=new JSlider(-50,50);
+    	JSlider slider5=new JSlider(-50,50);
+    	JSlider slider6=new JSlider(-50,50);
+    	JSlider slider7=new JSlider(-50,50);
+    	JSlider slider8=new JSlider(-50,50);
+    	JSlider slider9=new JSlider(-50,50);
+    	JSlider slider10=new JSlider(-50,50);
+    	JSlider slider11=new JSlider(-50,50);
+    	JSlider slider12=new JSlider(-50,50);
+    	JSlider slider13=new JSlider(-50,50);
+    	JSlider slider14=new JSlider(-50,50);
+    	JSlider slider15=new JSlider(-50,50);
+    	JSlider slider16=new JSlider(-50,50);
+    	JSlider slider17=new JSlider(-50,50);
+    	
+    	addSlider(slider1);
+    	addSlider(slider2);
+    	addSlider(slider3);
+    	addSlider(slider4);
+    	addSlider(slider5);
+    	addSlider(slider6);
+    	addSlider(slider7);
+    	addSlider(slider8);
+    	addSlider(slider9);
+    	addSlider(slider10);
+    	addSlider(slider11);
+    	addSlider(slider12);
+    	addSlider(slider13);
+    	addSlider(slider14);
+    	addSlider(slider15);
+    	addSlider(slider16);
+    	addSlider(slider17);
+    	
+        box.add(slider1);
+        box.add(slider2);
+        box.add(slider3);
+        box.add(slider4);
+        box.add(slider5);
+        box.add(slider6);
+        box.add(slider7);
+        box.add(slider8);
+        box.add(slider9);
+        box.add(slider10);
+        box.add(slider11);
+        box.add(slider12);
+        box.add(slider13);
+        box.add(slider14);
+        box.add(slider15);
+        box.add(slider16);
+        box.add(slider17);
+        
+        sliderBox.add(box);
+        return sliderBox;
+    }
+    
+    public void sliderInit()
+    {
+    	listener = new ChangeListener()  
+        {    
+			@Override
+			public void stateChanged(ChangeEvent event) {
+				// TODO Auto-generated method stub
+				//取出滑动条的值，并在文本中显示出来  
+                JSlider source = (JSlider) event.getSource();
+                setSlidervalue(Integer.toString(source.getValue()));
+                showVal.setText("当前滑动条的值为：" + mesg);
+               
+			}  
+        };
+        
+    	
+    }
+    
+    public void setSlidervalue(String ss)
+    {
+    	mesg=ss;
+    }
+    
+     public String getSlidervalue()
+     {
+    	 return mesg;
+     }
+     
+    
+     public JTextField getShowval()
+     {
+    	 return showVal;
+     }
+     
+     public void addSlider(JSlider slider)
+     {
+    	 
+         //设置绘制刻度  
+     	 slider.setPaintTicks(true);  
+         //设置主、次刻度的间距  
+     	 slider.setMajorTickSpacing(20);  
+     	 slider.setMinorTickSpacing(5);  
+         //设置绘制刻度标签，默认绘制数值刻度标签  
+     	 slider.setPaintLabels(true);
+         
+     	 slider.addChangeListener(listener);
+               
+            // box.add(new JLabel(description + "：")); 
+    	 
+     }
+    
+
+}

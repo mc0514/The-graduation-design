@@ -1,0 +1,166 @@
+package com.cit.robot;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.TooManyListenersException;
+
+import javax.swing.JOptionPane;
+
+
+
+
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+import gnu.io.UnsupportedCommOperationException;
+
+
+
+public class Selfserial implements  SerialPortEventListener{
+
+	private String portname;
+	
+	private String rate;
+	
+	private String data;
+	
+	private String stop;
+	
+	private String parity;
+	
+	protected CommPortIdentifier portId;
+	
+	protected Enumeration<?> ports;
+	
+	protected List<String> portList;
+	
+	protected SerialPort serialPort;
+	
+	protected OutputStream outputStream = null;
+	
+	protected InputStream inputStream = null;
+	
+	protected String mesg;
+	
+	protected int sendCount, reciveCount;
+	
+	protected boolean isEmptyOfPort;
+	
+	@Override
+	public void serialEvent(SerialPortEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public void setisEmptyOfPort(boolean bb)
+	{
+		isEmptyOfPort=bb;
+	}
+	
+	public boolean getisEmptyOfPort()
+	{
+		return isEmptyOfPort;
+	}
+	
+    
+
+	
+    public void scanPorts() {  
+        portList = new ArrayList<String>();  
+        Enumeration<?> en = CommPortIdentifier.getPortIdentifiers();  
+        CommPortIdentifier portId;  
+        while(en.hasMoreElements()){  
+            portId = (CommPortIdentifier) en.nextElement();  
+            if(portId.getPortType() == CommPortIdentifier.PORT_SERIAL){  
+                String name = portId.getName();  
+                if(!portList.contains(name)) {  
+                    portList.add(name);  
+                }  
+            }  
+        }  
+        if(null == portList   
+                || portList.isEmpty()) {  
+            //showErrMesgbox("未找到可用的串行端口号,程序无法启动!");
+        	setisEmptyOfPort(false);
+            System.exit(0);  
+        }
+        else
+        {
+        	setisEmptyOfPort(true);
+        }
+    }
+
+    public void openSerialPort(int rate, int data,int stop,int parity) {   
+        // 获取要打开的端口  
+        try {  
+            portId = CommPortIdentifier.getPortIdentifier(portname);  
+        } catch (NoSuchPortException e) {  
+            //showErrMesgbox("抱歉,没有找到"+portname+"串行端口号!");  
+            //setComponentsEnabled(true);  
+            return ;  
+        }  
+        // 打开端口  
+        try {  
+            serialPort = (SerialPort) portId.open("JavaRs232", 2000);  
+            //statusLb.setText(portname+"串口已经打开!");  
+        } catch (PortInUseException e) {  
+            //showErrMesgbox(portname+"端口已被占用,请检查!");  
+            //setComponentsEnabled(true);  
+            return ;  
+        }  
+          
+        // 设置端口参数  
+        try {  
+            //int rate = Integer.parseInt(this.rate);  
+            //int data = Integer.parseInt(this.data);  
+            //int stop = stopCombox.getSelectedIndex()+1;  
+            //int parity = parityCombox.getSelectedIndex();  
+            serialPort.setSerialPortParams(rate,data,stop,parity);  
+        } catch (UnsupportedCommOperationException e) {  
+            //showErrMesgbox(e.getMessage());  
+        }  
+  
+        // 打开端口的IO流管道   
+        try {   
+            outputStream = serialPort.getOutputStream();   
+            inputStream = serialPort.getInputStream();   
+        } catch (IOException e) {  
+            //showErrMesgbox(e.getMessage());  
+        }   
+  
+        // 给端口添加监听器  
+        try {   
+            serialPort.addEventListener(this);   
+        } catch (TooManyListenersException e) {  
+            //showErrMesgbox(e.getMessage());  
+        }   
+  
+        serialPort.notifyOnDataAvailable(true);   
+    }
+    
+    public void closeSerialPort() {   
+        try {   
+            if(outputStream != null)  
+                outputStream.close();  
+            if(serialPort != null)  
+                serialPort.close();   
+            serialPort = null;  
+            //statusLb.setText(portname+"串口已经关闭!");  
+            sendCount = 0;  
+            reciveCount = 0;  
+            //sendTa.setText("");  
+            //readTa.setText("");  
+        } catch (Exception e) {   
+            //showErrMesgbox(e.getMessage());  
+        }   
+    }
+
+}

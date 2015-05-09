@@ -1,0 +1,17 @@
+package com.cit.robot;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
+
+public class Selfslider {
+	
+	//定义滑动条的个数
+	protected int slidernum = 17;
+	
+	Box sliderBox = new Box(BoxLayout.Y_AXIS);  
+    JTextField showVal = new JTextField();  
+    ChangeListener listener;
+
+}

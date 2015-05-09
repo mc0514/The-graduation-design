@@ -1,0 +1,25 @@
+package com.cit.robot;
+
+public class DealMesg {
+
+	private StringBuilder receiveMessage = new StringBuilder();
+
+	private StringBuilder sendMessage = new StringBuilder();
+
+	public StringBuilder getreceiveMessage() {
+		return this.receiveMessage;
+	}
+
+	public void setreceiveMessage(StringBuilder sb) {
+		this.receiveMessage = sb;
+	}
+
+	public StringBuilder getsendMessage() {
+		return this.sendMessage;
+	}
+
+	public void setsendMessage(StringBuilder sb) {
+		this.sendMessage = sb;
+	}
+
+}

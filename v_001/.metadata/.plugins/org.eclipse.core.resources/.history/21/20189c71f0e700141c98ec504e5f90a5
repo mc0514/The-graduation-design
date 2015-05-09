@@ -1,0 +1,36 @@
+package com.cit.robot;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.List;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+
+
+
+public class Selfserial implements  SerialPortEventListener{
+
+	private String portname;
+	private String rate;
+	private String data;
+	private String stop;
+	private String parity;
+	protected CommPortIdentifier portId;
+	protected Enumeration<?> ports;
+	protected List<String> portList;
+	protected SerialPort serialPort;
+	protected OutputStream outputStream = null;
+	protected InputStream inputStream = null;
+	protected String mesg;
+	protected int sendCount, reciveCount;
+	@Override
+	public void serialEvent(SerialPortEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

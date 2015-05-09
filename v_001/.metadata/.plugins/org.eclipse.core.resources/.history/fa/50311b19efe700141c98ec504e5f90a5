@@ -1,0 +1,21 @@
+package com.cit.robot;
+
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+
+
+
+public class Selfserial implements  SerialPortEventListener{
+
+	private String portname;
+	private String rate;
+	private String data;
+	private String stop;
+	private String parity;
+	@Override
+	public void serialEvent(SerialPortEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

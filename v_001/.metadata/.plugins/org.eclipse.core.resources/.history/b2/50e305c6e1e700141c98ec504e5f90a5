@@ -1,0 +1,40 @@
+package com.cit.robot;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
+
+public class Selfslider {
+	
+	//定义滑动条的个数
+	protected int slidernum = 17;
+	
+	protected String mesg="null";
+	
+	Box sliderBox = new Box(BoxLayout.Y_AXIS);  
+    JTextField showVal = new JTextField();  
+    ChangeListener listener;
+    
+    public void addSlider(JSlider slider, String description)  
+    {
+    	//-----------添加绘制默认刻度标签的滑动条-----------  
+        slider = new JSlider(-50,50);  
+        //设置绘制刻度  
+        slider.setPaintTicks(true);  
+        //设置主、次刻度的间距  
+        slider.setMajorTickSpacing(20);  
+        slider.setMinorTickSpacing(5);  
+        //设置绘制刻度标签，默认绘制数值刻度标签  
+        slider.setPaintLabels(true);
+        
+        slider.addChangeListener(listener);
+        Box box = new Box(BoxLayout.X_AXIS);  
+        box.add(new JLabel(description + "："));  
+        box.add(slider);  
+        sliderBox.add(box);  
+    }  
+
+}

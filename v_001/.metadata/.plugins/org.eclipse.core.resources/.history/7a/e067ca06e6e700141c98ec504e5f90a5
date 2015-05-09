@@ -1,0 +1,494 @@
+package com.cit.robot;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+import gnu.io.UnsupportedCommOperationException;
+
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+//import java.awt.TextArea;
+//import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.TooManyListenersException;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+
+
+public class CITRobot extends JFrame implements ActionListener, SerialPortEventListener {
+	
+	
+	protected int WIN_WIDTH = 1000;
+	 
+	protected int WIN_HEIGHT = 800;
+	 
+	private JComboBox<?> portCombox, rateCombox, dataCombox, stopCombox, parityCombox;
+	 
+	private Button openPortBtn, closePortBtn, sendMsgBtn;
+	 
+	private JTextArea sendTa; 
+	 
+	private JTextArea readTa;  
+     
+	private JLabel statusLb;  
+	      
+	private String portname, rate, data, stop, parity;  
+	      
+	protected CommPortIdentifier portId;  
+	      
+	protected Enumeration<?> ports;  
+	      
+	protected List<String> portList;  
+	  
+	protected SerialPort serialPort;  
+	  
+	protected OutputStream outputStream = null;   
+	  
+	protected InputStream inputStream = null;   
+	      
+	protected String mesg;  
+	      
+	protected int sendCount, reciveCount;
+	
+	Selfslider slider = new Selfslider();
+	
+	//Box sliderBox = new Box(BoxLayout.Y_AXIS);  
+    //JTextField showVal = new JTextField();  
+    //ChangeListener listener; 
+	
+	public CITRobot(){
+		super("机器人步态规划v01");
+		setSize(WIN_WIDTH, WIN_HEIGHT); 
+		setLocationRelativeTo(null);
+		setResizable(false);
+		scanPorts();
+		
+		slider.sliderInit();
+        initComponents();
+        System.out.println("start init!!!");
+   
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  
+        setVisible(true); 	
+	}
+	
+	protected void initComponents(){
+		
+		Font lbFont = new Font("微软雅黑", Font.TRUETYPE_FONT, 14);
+		JPanel westPanel=new JPanel();
+		JPanel eastPanel=new JPanel();
+		JPanel centerPanel=new JPanel();
+		JPanel northPanel=new JPanel();
+		JPanel southPanel=new JPanel();
+		
+		JLabel baudrateLb = new JLabel("波特率：");
+		baudrateLb.setFont(lbFont);
+		JLabel stopbitsLb = new JLabel("停止位：");
+		stopbitsLb.setFont(lbFont);
+		JLabel portnameLb = new JLabel("串口号：");
+		portnameLb.setFont(lbFont);
+		JLabel databitsLb = new JLabel("数据位：");
+		databitsLb.setFont(lbFont);
+		JLabel parityLb = new JLabel("校验位：");
+		parityLb.setFont(lbFont);
+		statusLb = new JLabel();  
+	    statusLb.setOpaque(true);
+		statusLb.setFont(lbFont);
+		
+		
+		
+		portCombox = new JComboBox<String>((String [])portList.toArray(new String[0]));
+		//portCombox = new JComboBox<Integer>(new Integer[]{5, 6, 7, 8});
+	    portCombox.addActionListener(this);
+	    
+	    dataCombox = new JComboBox<Integer>(new Integer[]{5, 6, 7, 8});  
+        dataCombox.setSelectedIndex(3);  
+        dataCombox.addActionListener(this);
+        
+        parityCombox = new JComboBox<String>(new String[]{"NONE","ODD","EVEN","MARK","SPACE"});  
+        parityCombox.addActionListener(this);
+        
+        rateCombox = new JComboBox<Integer>(new Integer[]{2400,4800,9600,14400,19200,38400,56000});  
+        rateCombox.setSelectedIndex(2);  
+        rateCombox.addActionListener(this);
+        
+        stopCombox = new JComboBox<String>(new String[]{"1","2","1.5"});  
+        stopCombox.addActionListener(this);
+        
+        openPortBtn = new Button("打开端口");  
+        openPortBtn.addActionListener(this);  
+        closePortBtn = new Button("关闭端口");    
+        closePortBtn.addActionListener(this);
+        sendMsgBtn = new Button(" 发送 ");
+        sendMsgBtn.setSize(100, 50);
+        sendMsgBtn.addActionListener(this); 
+        
+        eastPanel.setLayout(new GridLayout(7,2,40,40));
+		eastPanel.add(portnameLb);
+		eastPanel.add(portCombox);
+		eastPanel.add(baudrateLb);
+		eastPanel.add(rateCombox);
+		eastPanel.add(databitsLb);
+		eastPanel.add(dataCombox);
+		eastPanel.add(stopbitsLb);
+		eastPanel.add(stopCombox);
+		eastPanel.add(parityLb);
+		eastPanel.add(parityCombox);
+		eastPanel.add(openPortBtn);
+		eastPanel.add(closePortBtn);
+		
+		northPanel.setLayout(new FlowLayout());
+		northPanel.add(statusLb);
+		
+		
+		southPanel.setLayout(new FlowLayout());
+		southPanel.add(sendMsgBtn);
+		
+		
+		//centerPanel.add(new CITSlider().init());
+		sendTa=new JTextArea();
+		sendTa = new JTextArea(8,50);
+		sendTa.setLineWrap(true);
+        sendTa.setEditable(false);  
+        sendTa.setBackground(new Color(225,242,250));
+		readTa=new JTextArea();
+		readTa = new JTextArea(8,50);  
+        readTa.setEditable(false);  
+        readTa.setBackground(new Color(225,242,250));  
+		
+		
+
+        //JSlider slider1=null;
+		
+        //JSlider slider2=null;
+		
+        //JSlider slider3=null;
+	
+       // JSlider slider4=null;
+        
+        //JSlider slider5=null;
+        
+        //JSlider slider6=null;
+        
+        //JSlider slider7=null;
+        
+        //JSlider slider8=null;
+        
+        //JSlider slider9=null;
+        
+        //JSlider slider10=null;
+        
+        //JSlider slider11=null;
+        
+        //JSlider slider12=null;
+        
+        //JSlider slider13=null;
+        
+        //JSlider slider14=null;
+        
+        //JSlider slider15=null;
+        
+        //JSlider slider16=null;
+        
+        //JSlider slider17=null;
+	 
+       
+        //addSlider(slider1, "舵机1");
+        //addSlider(slider2, "舵机2");
+        //addSlider(slider3, "舵机3");
+        //addSlider(slider4, "舵机4");
+        //addSlider(slider5, "舵机5");
+		
+        
+        centerPanel.setLayout(new GridLayout(2,2));
+        centerPanel.add(slider.getShowval());
+        centerPanel.add(slider.addSlider());
+        centerPanel.add(sendTa);
+        centerPanel.add(readTa);
+		
+		JPanel contentPane = (JPanel)getContentPane(); 
+		contentPane.setLayout(new BorderLayout());
+		contentPane.setBorder(new EmptyBorder(0, 0, 0, 0));  
+        contentPane.setOpaque(false);
+        contentPane.add(westPanel,BorderLayout.WEST);
+        contentPane.add(eastPanel,BorderLayout.EAST);
+        contentPane.add(southPanel,BorderLayout.SOUTH);
+        contentPane.add(northPanel,BorderLayout.NORTH);
+        contentPane.add(centerPanel,BorderLayout.CENTER);
+        
+        
+		
+	}
+	
+    public void scanPorts() {  
+        portList = new ArrayList<String>();  
+        Enumeration<?> en = CommPortIdentifier.getPortIdentifiers();  
+        CommPortIdentifier portId;  
+        while(en.hasMoreElements()){  
+            portId = (CommPortIdentifier) en.nextElement();  
+            if(portId.getPortType() == CommPortIdentifier.PORT_SERIAL){  
+                String name = portId.getName();  
+                if(!portList.contains(name)) {  
+                    portList.add(name);  
+                }  
+            }  
+        }  
+        if(null == portList   
+                || portList.isEmpty()) {  
+            showErrMesgbox("未找到可用的串行端口号,程序无法启动!");  
+            System.exit(0);  
+        }  
+    }  
+	
+
+
+	@Override
+	 public void serialEvent(SerialPortEvent event) {  
+        switch (event.getEventType()) {  
+            case SerialPortEvent.BI:  
+            case SerialPortEvent.OE:  
+            case SerialPortEvent.FE:  
+            case SerialPortEvent.PE:  
+            case SerialPortEvent.CD:  
+            case SerialPortEvent.CTS:  
+            case SerialPortEvent.DSR:  
+            case SerialPortEvent.RI:  
+            case SerialPortEvent.OUTPUT_BUFFER_EMPTY:  
+                break;  
+            case SerialPortEvent.DATA_AVAILABLE:
+            	
+                byte[] readBuffer = new byte[50];  
+  
+            try {  
+                while (inputStream.available() > 0) {  
+                    inputStream.read(readBuffer);  
+                }  
+                StringBuilder receivedMsg = new StringBuilder("/-- ");  
+                receivedMsg.append(new String(readBuffer).trim()).append(" --/\n");  
+                //readTa.append(receivedMsg.toString());
+                System.out.println(receivedMsg);
+                reciveCount++;
+                readTa.setText(receivedMsg.toString());
+                statusLb.setText("  发送: "+sendCount+"                                      接收: "+reciveCount);  
+            } catch (IOException e) {  
+                showErrMesgbox(e.getMessage());  
+            }  
+        }  
+    }  
+
+	@Override
+	
+	public void actionPerformed(ActionEvent e) {  
+        if(e.getSource() == portCombox  
+                || e.getSource() == rateCombox  
+                || e.getSource() == dataCombox  
+                || e.getSource() == stopCombox  
+                || e.getSource() == parityCombox){  
+            statusLb.setText(initStatus());  
+        }  
+        if(e.getSource() == openPortBtn){  
+            setComponentsEnabled(false);              
+            openSerialPort();  
+        }  
+        if(e.getSource() == closePortBtn){  
+            if(serialPort != null){  
+                closeSerialPort();  
+            }  
+            setComponentsEnabled(true);  
+        }  
+          
+        if(e.getSource() == sendMsgBtn){  
+            if(serialPort == null){  
+                showErrMesgbox("请先打开串行端口!");  
+                return ;  
+            }  
+            //mesg = "test!!";  
+            if(null == mesg || mesg.isEmpty()){  
+                showErrMesgbox("请输入你要发送的内容!");  
+                return ;  
+            }  
+            sendDataToSeriaPort();  
+        }  
+    } 
+	
+	 public String initStatus() {  
+	        portname = portCombox.getSelectedItem().toString();  
+	        rate = rateCombox.getSelectedItem().toString();  
+	        data = dataCombox.getSelectedItem().toString();  
+	        stop = stopCombox.getSelectedItem().toString();  
+	        parity = parityCombox.getSelectedItem().toString();  
+	          
+	        StringBuffer str = new StringBuffer("当前串口号:");  
+	        str.append(portname).append(" 波特率:");  
+	        str.append(rate).append(" 数据位:");  
+	        str.append(data).append(" 停止位:");  
+	        str.append(stop).append(" 校验位:");  
+	        str.append(parity);  
+	        return str.toString();  
+	    }  
+	 
+	 public void setComponentsEnabled(boolean enabled) {  
+	        openPortBtn.setEnabled(enabled);  
+	        openPortBtn.setEnabled(enabled);  
+	        portCombox.setEnabled(enabled);  
+	        rateCombox.setEnabled(enabled);  
+	        dataCombox.setEnabled(enabled);  
+	        stopCombox.setEnabled(enabled);  
+	        parityCombox.setEnabled(enabled);  
+	    }
+	 
+	    public void openSerialPort() {   
+	        // 获取要打开的端口  
+	        try {  
+	            portId = CommPortIdentifier.getPortIdentifier(portname);  
+	        } catch (NoSuchPortException e) {  
+	            showErrMesgbox("抱歉,没有找到"+portname+"串行端口号!");  
+	            setComponentsEnabled(true);  
+	            return ;  
+	        }  
+	        // 打开端口  
+	        try {  
+	            serialPort = (SerialPort) portId.open("JavaRs232", 2000);  
+	            statusLb.setText(portname+"串口已经打开!");  
+	        } catch (PortInUseException e) {  
+	            showErrMesgbox(portname+"端口已被占用,请检查!");  
+	            setComponentsEnabled(true);  
+	            return ;  
+	        }  
+	          
+	        // 设置端口参数  
+	        try {  
+	            int rate = Integer.parseInt(this.rate);  
+	            int data = Integer.parseInt(this.data);  
+	            int stop = stopCombox.getSelectedIndex()+1;  
+	            int parity = parityCombox.getSelectedIndex();  
+	            serialPort.setSerialPortParams(rate,data,stop,parity);  
+	        } catch (UnsupportedCommOperationException e) {  
+	            showErrMesgbox(e.getMessage());  
+	        }  
+	  
+	        // 打开端口的IO流管道   
+	        try {   
+	            outputStream = serialPort.getOutputStream();   
+	            inputStream = serialPort.getInputStream();   
+	        } catch (IOException e) {  
+	            showErrMesgbox(e.getMessage());  
+	        }   
+	  
+	        // 给端口添加监听器  
+	        try {   
+	            serialPort.addEventListener(this);   
+	        } catch (TooManyListenersException e) {  
+	            showErrMesgbox(e.getMessage());  
+	        }   
+	  
+	        serialPort.notifyOnDataAvailable(true);   
+	    }
+	    
+	    public void closeSerialPort() {   
+	        try {   
+	            if(outputStream != null)  
+	                outputStream.close();  
+	            if(serialPort != null)  
+	                serialPort.close();   
+	            serialPort = null;  
+	            statusLb.setText(portname+"串口已经关闭!");  
+	            sendCount = 0;  
+	            reciveCount = 0;  
+	            sendTa.setText("");  
+	            readTa.setText("");  
+	        } catch (Exception e) {   
+	            showErrMesgbox(e.getMessage());  
+	        }   
+	    }
+	    
+	    public void showErrMesgbox(String msg) {  
+	        JOptionPane.showMessageDialog(this, msg);  
+	    }  
+	    
+	    public void sendDataToSeriaPort() {   
+	        try {   
+	            sendCount++;  
+	            outputStream.write(mesg.getBytes());   
+	            outputStream.flush();   
+	  
+	        } catch (IOException e) {   
+	            showErrMesgbox(e.getMessage());  
+	        }
+	        sendTa.setText(mesg);
+	          
+	        statusLb.setText("  发送: "+sendCount+"                                      接收: "+reciveCount);  
+	    }
+	    
+	   /* public void sliderInit()
+	    {
+	    	listener = new ChangeListener()  
+	        {    
+				@Override
+				public void stateChanged(ChangeEvent event) {
+					// TODO Auto-generated method stub
+					//取出滑动条的值，并在文本中显示出来  
+	                JSlider source = (JSlider) event.getSource();
+	                mesg=Integer.toString(source.getValue());
+	                showVal.setText("当前滑动条的值为：" + mesg);
+	               
+				}  
+	        };
+	        
+	    	
+	    }*/
+	    
+	    /*public void addSlider(JSlider slider, String description)  
+	    {
+	    	//-----------添加绘制默认刻度标签的滑动条-----------  
+	        slider = new JSlider(-50,50);  
+	        //设置绘制刻度  
+	        slider.setPaintTicks(true);  
+	        //设置主、次刻度的间距  
+	        slider.setMajorTickSpacing(20);  
+	        slider.setMinorTickSpacing(5);  
+	        //设置绘制刻度标签，默认绘制数值刻度标签  
+	        slider.setPaintLabels(true);
+	        
+	        slider.addChangeListener(listener);
+	        Box box = new Box(BoxLayout.X_AXIS);  
+	        box.add(new JLabel(description + "："));  
+	        box.add(slider);  
+	        sliderBox.add(box);  
+	    }  */
+	      
+  
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		new CITRobot();
+
+	}
+
+}
