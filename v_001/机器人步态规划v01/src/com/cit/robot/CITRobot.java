@@ -126,6 +126,7 @@ public class CITRobot extends JFrame implements ActionListener {
 
 		eastPanel.setLayout(new GridLayout(7, 2, 40, 40));
 		eastPanel.add(portnameLb);
+		portnameLb.setLocation(10, 20);
 		eastPanel.add(portCombox);
 		eastPanel.add(baudrateLb);
 		eastPanel.add(rateCombox);
@@ -157,6 +158,7 @@ public class CITRobot extends JFrame implements ActionListener {
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 		contentPane.add(northPanel, BorderLayout.NORTH);
 		contentPane.add(centerPanel, BorderLayout.CENTER);
+		pack();
 
 	}
 
