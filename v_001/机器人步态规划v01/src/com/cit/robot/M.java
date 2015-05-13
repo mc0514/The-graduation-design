@@ -99,7 +99,7 @@ public class M extends JFrame implements ActionListener {
 	private javax.swing.JPanel jPanel1;
 	// End of variables declaration
 
-	// 为滑动条增加时间
+	// 为滑动条增加监听
 	ChangeListener listener1;
 	ChangeListener listener2;
 	ChangeListener listener3;
@@ -136,17 +136,20 @@ public class M extends JFrame implements ActionListener {
 	protected String mesg15;
 	protected String mesg16;
 	protected String mesg17;
-
+   
 	protected int sendCount;
 	protected int reciveCount;
-
+    //调用串口类
 	Selfserial serial = new Selfserial();
+	//调用消息处理
 	DealMesg dealmesg = new DealMesg();
 
 	public M() {
 		super("机器人步态规划v_1.1");
 		setResizable(false);
+		//扫描端口，获得pc所有的可用端口
 		serial.scanPorts();
+		//初始化UI组件
 		initComponents();
 		setVisible(true);
 
@@ -162,13 +165,15 @@ public class M extends JFrame implements ActionListener {
 	private void initComponents() {
 
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
+        //定义一个容器，用于存放滑动条组件
 		jPanel1 = new JPanel();
 
 		Textfiled_serv1 = new JTextField("0");
+		//设定滑动条的值范围为（-50，50）
 		Slider_serv1 = new JSlider(-50, 50);
 		Checkbox_serv1 = new JCheckBox();
 		Checkbox_serv1.setText("舵机1");
+		//将监听事件绑定到滑动条上
 		setSlider(Slider_serv1, listener1, Textfiled_serv1);
 
 		Slider_serv2 = new JSlider(-50, 50);
@@ -266,13 +271,15 @@ public class M extends JFrame implements ActionListener {
 		Checkbox_serv17 = new JCheckBox();
 		Checkbox_serv17.setText("舵机17");
 		setSlider(Slider_serv17, listener17, Textfiled_serv17);
-
+		
+        //设置串口号初始化组件，将获得的所有串口在列表中显示出来，用于选择
 		Lable_port = new JLabel();
 		Lable_port.setText("串口号");
 		Comobox_port = new JComboBox<String>((String[]) serial.getportList()
 				.toArray(new String[0]));
 		Comobox_port.addActionListener(this);
 
+		//设置波特率初始化组件，默认波特率为9600
 		Lable_baudrate = new JLabel();
 		Lable_baudrate.setText("波特率");
 		Comobox_boudrate = new JComboBox<Integer>(new Integer[] { 2400, 4800,
@@ -280,6 +287,7 @@ public class M extends JFrame implements ActionListener {
 		Comobox_boudrate.setSelectedIndex(2);
 		Comobox_boudrate.addActionListener(this);
 
+		//设置数据位初始化组件，默认为8
 		Lable_databits = new JLabel();
 		Lable_databits.setText("数据位");
 		Comobox_datebits = new JComboBox<Integer>(new Integer[] { 5, 6, 7, 8,
@@ -287,12 +295,14 @@ public class M extends JFrame implements ActionListener {
 		Comobox_datebits.setSelectedIndex(3);
 		Comobox_datebits.addActionListener(this);
 
+		//设置停止位初始化组件，默认为1
 		Lable_stopbits = new JLabel();
 		Lable_stopbits.setText("停止位");
 		Comobox_stopbits = new JComboBox<String>(
 				new String[] { "1", "2", "1.5" });
 		Comobox_stopbits.addActionListener(this);
 
+		//设置校验位初始化组件，默认为NONE
 		Lable_paritybits = new JLabel();
 		Lable_paritybits.setText("校验位");
 		Comobox_paritybits = new JComboBox<String>(new String[] { "NONE",
@@ -1713,6 +1723,9 @@ public class M extends JFrame implements ActionListener {
 		return mesg17;
 	}
 
+	/*
+	 * 将文本框里的值，存放到对应的mesg字段里
+	 * */	 
 	public void getMesgFromTextfield() {
 		setSlidervalue1(Textfiled_serv1.getText());
 		setSlidervalue2(Textfiled_serv2.getText());
@@ -1786,7 +1799,6 @@ public class M extends JFrame implements ActionListener {
 				JSlider source = (JSlider) event.getSource();
 				String ss;
 				ss = Integer.toString(source.getValue());
-				// setSlidervalue1(ss);
 				System.out.println("serv: " + ss);
 				textfield.setText(ss);
 
@@ -1794,8 +1806,6 @@ public class M extends JFrame implements ActionListener {
 		};
 
 		slider.addChangeListener(listener);
-
-		// box.add(new JLabel(description + "："));
 
 	}
 
@@ -1819,6 +1829,10 @@ public class M extends JFrame implements ActionListener {
 	public String getparity() {
 		return Integer.toString(Comobox_paritybits.getSelectedIndex());
 	}
+	
+	/*
+	 * 初始化串口
+	 */
 
 	public void setInitSerial() {
 		serial.setportname(getPortName());
